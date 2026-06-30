@@ -19,14 +19,14 @@ hours = st.number_input(
     "Hours Studied",
     min_value=0.0,
     max_value=24.0,
-    value=5.0
+    value=0.0
 )
 
 previous = st.number_input(
     "Previous Scores",
     min_value=0.0,
     max_value=100.0,
-    value=50.0
+    value=0.0
 )
 
 activity = st.selectbox(
@@ -40,14 +40,14 @@ sleep = st.number_input(
     "Sleep Hours",
     min_value=0.0,
     max_value=24.0,
-    value=7.0
+    value=0.0
 )
 
 papers = st.number_input(
     "Sample Question Papers Practiced",
     min_value=0,
     max_value=50,
-    value=5
+    value=0
 )
 
 # Predict
