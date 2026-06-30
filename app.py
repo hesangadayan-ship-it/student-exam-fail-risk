@@ -79,7 +79,7 @@ if st.button("Predict Risk"):
         gauge={
             "axis":{"range":[0,100]},
 
-            "bar":{"color":"orange"},
+            "bar":{"color":"brown"},
 
             "steps":[
                 {"range":[0,20],"color":"darkgreen"},
