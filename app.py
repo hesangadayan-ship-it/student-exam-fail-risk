@@ -1,80 +1,149 @@
-# Gauge Meter
-fig = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=risk_percent,
+import streamlit as st
+import pickle
+import numpy as np
+import plotly.graph_objects as go
 
-    number={"suffix":"%"},
+# Load model
+with open("model.pkl", "rb") as file:
+    model = pickle.load(file)
 
-    title={"text":"Exam Fail Risk"},
+# Title
+st.title("🎓 Student Exam Fail Risk Prediction")
 
-    gauge={
-        "axis":{"range":[0,100]},
-
-        "bar":{"color":"#FF8C00"},  # Orange needle/bar
-
-        "steps":[
-            {"range":[0,20],"color":"darkgreen"},
-            {"range":[20,40],"color":"green"},
-            {"range":[40,60],"color":"yellow"},
-            {"range":[60,80],"color":"orange"},
-            {"range":[80,100],"color":"red"}
-        ]
-    }
-))
-
-st.plotly_chart(
-    fig,
-    use_container_width=True
+st.write(
+    "Enter the student details below to predict the risk of failing an exam."
 )
 
-# Risk Categories & Recommendations
+# Inputs
+hours = st.number_input(
+    "Hours Studied",
+    min_value=0.0,
+    max_value=24.0,
+    value=5.0
+)
 
-if risk_percent < 20:
+previous = st.number_input(
+    "Previous Scores",
+    min_value=0.0,
+    max_value=100.0,
+    value=50.0
+)
 
-    st.success(
-        f"✅ Very Low Risk ({risk_percent}%)"
+activity = st.selectbox(
+    "Extracurricular Activities",
+    ["Yes", "No"]
+)
+
+activity = 1 if activity == "Yes" else 0
+
+sleep = st.number_input(
+    "Sleep Hours",
+    min_value=0.0,
+    max_value=24.0,
+    value=7.0
+)
+
+papers = st.number_input(
+    "Sample Question Papers Practiced",
+    min_value=0,
+    max_value=50,
+    value=5
+)
+
+# Predict
+if st.button("Predict Risk"):
+
+    data = np.array([[
+        hours,
+        previous,
+        activity,
+        sleep,
+        papers
+    ]])
+
+    probability = model.predict_proba(data)[0][1]
+
+    risk_percent = round(
+        probability * 100,
+        1
     )
 
-    st.write(
-        "The student is performing very well and is highly unlikely to fail."
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=risk_percent,
+
+        number={"suffix":"%"},
+
+        title={"text":"Exam Fail Risk"},
+
+        gauge={
+            "axis":{"range":[0,100]},
+
+            "bar":{"color":"orange"},
+
+            "steps":[
+                {"range":[0,20],"color":"darkgreen"},
+                {"range":[20,40],"color":"green"},
+                {"range":[40,60],"color":"yellow"},
+                {"range":[60,80],"color":"orange"},
+                {"range":[80,100],"color":"red"}
+            ]
+        }
+    ))
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
     )
 
-elif risk_percent < 40:
+    # Risk Categories
 
-    st.success(
-        f"✅ Low Risk ({risk_percent}%)"
-    )
+    if risk_percent < 20:
 
-    st.write(
-        "The student is progressing well but should maintain consistent study habits."
-    )
+        st.success(
+            f"✅ Very Low Risk ({risk_percent}%)"
+        )
 
-elif risk_percent < 60:
+        st.write(
+            "The student is performing very well and is highly unlikely to fail."
+        )
 
-    st.warning(
-        f"⚠️ Moderate Risk ({risk_percent}%)"
-    )
+    elif risk_percent < 40:
 
-    st.write(
-        "The student may benefit from additional revision and practice papers."
-    )
+        st.success(
+            f"✅ Low Risk ({risk_percent}%)"
+        )
 
-elif risk_percent < 80:
+        st.write(
+            "The student is progressing well but should maintain current study habits."
+        )
 
-    st.warning(
-        f"⚠️ High Risk ({risk_percent}%)"
-    )
+    elif risk_percent < 60:
 
-    st.write(
-        "The student should increase study time and seek additional academic support."
-    )
+        st.warning(
+            f"⚠️ Moderate Risk ({risk_percent}%)"
+        )
 
-else:
+        st.write(
+            "Additional revision and practice are recommended."
+        )
 
-    st.error(
-        f"🚨 Critical Risk ({risk_percent}%)"
-    )
+    elif risk_percent < 80:
 
-    st.write(
-        "Immediate intervention is strongly recommended to reduce the risk of failure."
-    )
+        st.warning(
+            f"⚠️ High Risk ({risk_percent}%)"
+        )
+
+        st.write(
+            "The student should increase study time and seek academic support."
+        )
+
+    else:
+
+        st.error(
+            f"🚨 Critical Risk ({risk_percent}%)"
+        )
+
+        st.write(
+            "Immediate intervention is strongly recommended."
+        )
